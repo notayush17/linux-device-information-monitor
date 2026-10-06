@@ -10,7 +10,7 @@ The project demonstrates the path from information maintained by the Linux kerne
 
 ## 2. Features
 
-- Linux miscellaneous character-device driver.
+- A Linux miscellaneous character-device driver that registers `/dev/hw_health` and provides a read-only interface for obtaining system information from the Linux kernel.
 - Reports the total CPU count, online CPU count, total memory, free memory, and system uptime.
 - C++17 command-line client using `open()`, `read()`, and `close()`.
 - A `--demo` mode for trying the client without loading the kernel module.
@@ -70,12 +70,24 @@ Kernel uptime : 4312 seconds
 
 ## 6. Architecture
 
-```mermaid
-flowchart LR
-  H[CPU and RAM hardware] --> K[Linux kernel]
-  K --> D[hw_health.ko<br/>misc character driver]
-  D -->|read()| A[hw_monitor C++ client]
-  A --> T[Terminal output]
+```text
+CPU and RAM information
+          |
+          v
+    Linux kernel
+          |
+          v
+  hw_health.ko
+  character driver
+          |
+          v
+ /dev/hw_health
+          |
+          v
+ C++ user-space client
+          |
+          v
+   Terminal output
 ```
 
 The driver is the boundary between privileged kernel space and unprivileged user space. The client does not access kernel memory or hardware registers directly; it requests a formatted snapshot from the kernel through the device file.
@@ -105,4 +117,17 @@ The parser test checks the key-value response format, and the smoke test runs th
 
 ## 9. Limitations and future improvements
 
-This is a read-only educational driver. It does not control a physical sensor, change hardware state, or provide alarms. A future version could add a real temperature sensor, polling with `poll()`, permissions via udev, and a writable configuration interface.
+### Limitations
+
+- The driver only reads information; it does not control hardware.
+- The project does not include a graphical user interface.
+- The driver does not generate alerts for high or low values.
+- A Linux system with matching kernel headers is required for the kernel-module demonstration.
+
+### Future improvements
+
+- Add support for reading temperature sensors.
+- Add alert messages when system values cross defined limits.
+- Add polling with `poll()` so the application can receive updates.
+- Add udev rules for clearer device permissions.
+- Add a writable configuration interface.
