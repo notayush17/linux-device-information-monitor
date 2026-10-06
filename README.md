@@ -70,6 +70,10 @@ Kernel uptime : 4312 seconds
 
 ## 6. Architecture
 
+![Linux Device Information Monitor architecture](docs/architecture-diagram.png)
+
+Figure 1: Information flow from hardware and the Linux kernel to the C++ user-space client.
+
 ```text
 CPU and RAM information
           |
@@ -182,6 +186,7 @@ The driver is the boundary between privileged kernel space and unprivileged user
 ├── docs/PRD.md               # requirements and six-stage plan
 ├── docs/DESIGN.md            # design decisions and data flow
 ├── docs/UML.md               # class, sequence and state diagrams
+├── docs/architecture-diagram.png # visual system architecture
 ├── Makefile
 └── README.md
 ```
