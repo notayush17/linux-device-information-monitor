@@ -25,10 +25,6 @@ The project demonstrates the path from information maintained by the Linux kerne
 
 No Python, Java, web framework, or external library is used.
 
-### macOS development note
-
-macOS can be used to edit the project, run the C++ tests and demo, and upload the repository to GitHub. Run `make test` and `make demo` on macOS. Do not run `make module` on macOS; the driver must be compiled on Linux with matching Linux kernel headers. For the complete demonstration, copy or clone this repository into a Linux virtual machine or use a Linux computer.
-
 ## 4. Build and run
 
 ### User-space demo
@@ -110,11 +106,3 @@ The parser test checks the key-value response format, and the smoke test runs th
 ## 9. Limitations and future improvements
 
 This is a read-only educational driver. It does not control a physical sensor, change hardware state, or provide alarms. A future version could add a real temperature sensor, polling with `poll()`, permissions via udev, and a writable configuration interface.
-
-## 10. Five-minute presentation plan
-
-1. State the problem and show the architecture diagram.
-2. Explain that `misc_register()` creates the character device.
-3. Point out the driver's `read` callback and the C++ `open()` and `read()` calls.
-4. Explain the repository structure and testing approach.
-5. If a Linux system is available, load the module and run the real demonstration.
