@@ -92,6 +92,85 @@ CPU and RAM information
 
 The driver is the boundary between privileged kernel space and unprivileged user space. The client does not access kernel memory or hardware registers directly; it requests a formatted snapshot from the kernel through the device file.
 
+### Layered architecture
+
+```text
++-------------------------------------------------------------+
+|                    User Space                              |
+|  hw_monitor (C++17 client)                                 |
+|  - opens the device file                                   |
+|  - reads the snapshot                                      |
+|  - parses key=value data                                   |
++----------------------------+--------------------------------+
+                             |  open() / read() / close()
++----------------------------v--------------------------------+
+|                    Device Interface                        |
+|  /dev/hw_health                                             |
+|  Read-only character device                                |
++----------------------------+--------------------------------+
+                             |  file_operations.read
++----------------------------v--------------------------------+
+|                    Kernel Space                            |
+|  hw_health.ko                                               |
+|  - registers the misc device                               |
+|  - collects CPU, memory, and uptime values                 |
+|  - copies the formatted result to user space               |
++----------------------------+--------------------------------+
+                             |
++----------------------------v--------------------------------+
+|                    Linux Kernel Data                       |
+|  CPU information | memory pages | system jiffies           |
++-------------------------------------------------------------+
+```
+
+### Read-request flow
+
+```text
+  User runs the program
+          |
+          v
+  C++ client calls open("/dev/hw_health")
+          |
+          v
+  Linux selects the driver's read callback
+          |
+          v
+  Driver collects CPU, memory, and uptime values
+          |
+          v
+  Driver creates a key=value text snapshot
+          |
+          v
+  read() copies the snapshot to the C++ client
+          |
+          v
+  Client parses the values and prints the report
+```
+
+### Device lifecycle
+
+```text
+        +----------+
+        | Unloaded |
+        +----+-----+
+             | sudo insmod
+             v
+        +----------+
+        | Ready    | <------------------+
+        +----+-----+                    |
+             | read()                   | read completed
+             v                          |
+        +----------+                    |
+        | Reading  | -------------------+
+        +----+-----+
+             |
+             | sudo rmmod
+             v
+        +----------+
+        | Unloaded |
+        +----------+
+```
+
 ## 7. Repository structure
 
 ```text
