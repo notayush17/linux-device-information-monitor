@@ -6,11 +6,11 @@
 
 Linux Device Information Monitor is a small command-line application that reads CPU, memory, and uptime information through a Linux character device. A kernel module creates `/dev/hw_health`; the C++ program opens that device and reads the information using the POSIX `open()` and `read()` system calls.
 
-The project demonstrates the path from information maintained by the Linux kernel to a user-space program. It is intentionally small enough to understand and explain in 5–10 minutes.
+The project demonstrates the path from information maintained by the Linux kernel to a user-space program.
 
 ## 2. Features
 
-- A Linux miscellaneous character-device driver that registers `/dev/hw_health` and provides a read-only interface for obtaining system information from the Linux kernel.
+- A Linux miscellaneous character-device driver that registers `/dev/hw_health`, defines a read operation, collects CPU, memory, and uptime values from kernel data, and provides them to a user-space application through a read-only device interface.
 - Reports the total CPU count, online CPU count, total memory, free memory, and system uptime.
 - C++17 command-line client using `open()`, `read()`, and `close()`.
 - A `--demo` mode for trying the client without loading the kernel module.
@@ -73,107 +73,6 @@ Kernel uptime : 4312 seconds
 ![Linux Device Information Monitor architecture](docs/architecture-diagram.png)
 
 Figure 1: Information flow from hardware and the Linux kernel to the C++ user-space client.
-
-```text
-CPU and RAM information
-          |
-          v
-    Linux kernel
-          |
-          v
-  hw_health.ko
-  character driver
-          |
-          v
- /dev/hw_health
-          |
-          v
- C++ user-space client
-          |
-          v
-   Terminal output
-```
-
-The driver is the boundary between privileged kernel space and unprivileged user space. The client does not access kernel memory or hardware registers directly; it requests a formatted snapshot from the kernel through the device file.
-
-### Layered architecture
-
-```text
-+-------------------------------------------------------------+
-|                    User Space                              |
-|  hw_monitor (C++17 client)                                 |
-|  - opens the device file                                   |
-|  - reads the snapshot                                      |
-|  - parses key=value data                                   |
-+----------------------------+--------------------------------+
-                             |  open() / read() / close()
-+----------------------------v--------------------------------+
-|                    Device Interface                        |
-|  /dev/hw_health                                             |
-|  Read-only character device                                |
-+----------------------------+--------------------------------+
-                             |  file_operations.read
-+----------------------------v--------------------------------+
-|                    Kernel Space                            |
-|  hw_health.ko                                               |
-|  - registers the misc device                               |
-|  - collects CPU, memory, and uptime values                 |
-|  - copies the formatted result to user space               |
-+----------------------------+--------------------------------+
-                             |
-+----------------------------v--------------------------------+
-|                    Linux Kernel Data                       |
-|  CPU information | memory pages | system jiffies           |
-+-------------------------------------------------------------+
-```
-
-### Read-request flow
-
-```text
-  User runs the program
-          |
-          v
-  C++ client calls open("/dev/hw_health")
-          |
-          v
-  Linux selects the driver's read callback
-          |
-          v
-  Driver collects CPU, memory, and uptime values
-          |
-          v
-  Driver creates a key=value text snapshot
-          |
-          v
-  read() copies the snapshot to the C++ client
-          |
-          v
-  Client parses the values and prints the report
-```
-
-### Device lifecycle
-
-```text
-        +----------+
-        | Unloaded |
-        +----+-----+
-             | sudo insmod
-             v
-        +----------+
-        | Ready    | <------------------+
-        +----+-----+                    |
-             | read()                   | read completed
-             v                          |
-        +----------+                    |
-        | Reading  | -------------------+
-        +----+-----+
-             |
-             | sudo rmmod
-             v
-        +----------+
-        | Unloaded |
-        +----------+
-```
 
 ## 7. Repository structure
 
