@@ -4,9 +4,9 @@
 
 ## 1. Project introduction
 
-Linux Device Information Monitor is a small command-line application that reads CPU, memory, and uptime information through a Linux character device. A kernel module creates `/dev/hw_health`; the C++ program opens that device and reads the information using the POSIX `open()` and `read()` system calls.
+Linux Device Information Monitor is a Linux-based command-line application that collects CPU, memory, and system uptime information through a custom Linux character device. The kernel module registers `/dev/hw_health` and provides a read-only interface between the Linux kernel and the C++ user-space application. The C++ program opens the device, reads the formatted information using the POSIX `open()` and `read()` system calls, processes the received data, and displays a clear system-information report in the terminal.
 
-The project demonstrates the path from information maintained by the Linux kernel to a user-space program.
+The project demonstrates how kernel-level system information can be accessed by a user-space program through a device-driver interface. It covers Linux kernel modules, character devices, file operations, system calls, kernel-space and user-space communication, C++ programming, and basic error handling.
 
 ## 2. Features
 
